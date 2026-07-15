@@ -166,6 +166,10 @@ function ShortfallReadout({
   const inDeficit = shortfall < 0;
   const mbmGap = income - household.povertyLineMonthly; // negative → below the line
   const phrase = HOUSEHOLD_PHRASE[household.id];
+  // The housing benefit is rent-earmarked, so part of the "left after food"
+  // residual can only go to rent. Surfaced so the figure isn't misread as slack.
+  const rentLocked =
+    household.income.find((i) => i.key === "housing")?.amount ?? 0;
 
   const gapWord = mbmGap < 0 ? "below" : "above";
   const liveSummary = inDeficit
@@ -226,6 +230,16 @@ function ShortfallReadout({
           </>
         )}
       </p>
+
+      {!inDeficit && rentLocked > 0 && (
+        <p
+          className="text-[13px] leading-normal text-ink-muted"
+          style={{ margin: 0 }}
+        >
+          Of that, {formatCAD(rentLocked)} is the rent-earmarked housing
+          benefit, which can only go to rent.
+        </p>
+      )}
 
       <div
         className="mt-2 flex items-center gap-2.5 border-t border-border pt-4 text-sm text-ink-muted"

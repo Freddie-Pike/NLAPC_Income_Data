@@ -71,6 +71,9 @@ export default function PovertyLineComparison({
 
   const rows: Row[] = households.map((h) => {
     const pct = povertyLineShare(h) * 100;
+    // Flag on the SAME rounded value the grid fills with (filled = round(pct)),
+    // so a boundary household's label can never contradict its squares.
+    const shown = Math.round(pct);
     return {
       id: h.id,
       label: h.label,
@@ -78,8 +81,8 @@ export default function PovertyLineComparison({
       income: sumLineItems(h.income),
       mbm: h.povertyLineMonthly,
       estimateLine: Boolean(h.povertyLineEstimate),
-      deep: pct < DEEP_PCT,
-      below: pct < 100,
+      deep: shown < DEEP_PCT,
+      below: shown < 100,
     };
   });
 

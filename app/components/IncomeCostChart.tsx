@@ -429,8 +429,12 @@ export default function IncomeCostChart({
         benefits ({meta.federalYear}) · food: {meta.foodYear} Nutritious Food
         Basket (weekly × {meta.monthlyFactor}) · poverty line:{" "}
         {meta.povertyYear} Market Basket Measure ÷ 12. Bar baseline at 0, one
-        axis. Estimate-tagged figures are derived, see the tooltip and the data
-        table for the method.
+        axis. The poverty line already includes a food allowance; the food bar
+        is a separate, independent healthy-eating benchmark, not added onto the
+        line. Food First NL&apos;s own published monthly food figure uses × 4
+        rather than × {meta.monthlyFactor}, so this figure sits a little higher.
+        Estimate-tagged figures are derived, see the tooltip and the data table
+        for the method.
       </figcaption>
     </figure>
   );
