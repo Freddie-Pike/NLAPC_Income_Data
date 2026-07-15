@@ -8,3 +8,6 @@ public
 package-lock.json
 *.tsbuildinfo
 next-env.d.ts
+
+# Generated from data/graph-data.csv by scripts/gen-seed-snapshot.mjs.
+lib/graph-data-snapshot.ts

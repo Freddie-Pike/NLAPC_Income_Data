@@ -6,38 +6,28 @@
  * never hand-edited. This module parses it into the fixed `GraphData` shape and
  * is the one in-repo derivation of the baseline, used for:
  *   • the offline / Sheet-unreachable fallback (`lib/load-graph-data.ts`);
- *   • the server-rendered sources section (`app/page.tsx`);
- *   • the Vitest suites (which formerly imported the hand-typed `mockGraphData`).
+ *   • the server-rendered sources section (`app/(site)/sources/page.tsx`);
+ *   • the Vitest suites.
  *
- * It uses `node:fs` and MUST only be imported by server code or tests, never a
- * client component, so `papaparse` never enters the client bundle. (This is why
- * it lives here and not in `lib/graph-data.ts`, which clients import for types
- * and pure helpers.)
+ * The CSV is consumed as a BUNDLED STRING (`lib/graph-data-snapshot.ts`, generated
+ * from the CSV by `scripts/gen-seed-snapshot.mjs`), not read from disk at runtime.
+ * A production Turbopack build compiles `readFileSync(new URL(..., import.meta.url))`
+ * into a Turbopack asset-URL read out of `.next/server/assets/`, and that path does
+ * not survive Netlify's serverless-function packaging, so the read throws ENOENT and
+ * the data route 502s (works locally, fails on deploy). Inlining the CSV as a string
+ * keeps it in the JS bundle on every host and builder, so the function never touches
+ * the filesystem. The drift guard in `lib/seed-data.test.ts` keeps the generated
+ * snapshot identical to `data/graph-data.csv`.
+ *
+ * It uses `papaparse` (via `parseGraphDataCsv`) and MUST only be imported by server
+ * code or tests, never a client component, so `papaparse` never enters the client
+ * bundle. (This is why it lives here and not in `lib/graph-data.ts`, which clients
+ * import for types and pure helpers.)
  */
 
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { join } from "node:path";
 import { parseGraphDataCsv } from "@/lib/parse-sheet-csv";
+import { graphDataCsv } from "@/lib/graph-data-snapshot";
 import type { GraphData } from "@/lib/graph-data";
-
-/**
- * Resolve the committed CSV's path. Keeping the `new URL(<literal>,
- * import.meta.url)` form lets Next's file-tracing bundle the CSV into the
- * deployed function so it's present at runtime. Under jsdom (component tests)
- * `import.meta.url` is an http URL, not `file:`, so fall back to `process.cwd()`.
- */
-function seedCsvPath(): string {
-  const url = new URL("../data/graph-data.csv", import.meta.url);
-  return url.protocol === "file:"
-    ? fileURLToPath(url)
-    : join(process.cwd(), "data/graph-data.csv");
-}
-
-/** Read + parse the committed seed CSV into `GraphData`. Throws if it can't parse. */
-function readSeed(): GraphData {
-  return parseGraphDataCsv(readFileSync(seedCsvPath(), "utf8"));
-}
 
 let cached: GraphData | null = null;
 
@@ -47,5 +37,5 @@ let cached: GraphData | null = null;
  * (the Route Handler shallow-clones before adding `meta.stale`).
  */
 export function getSeedGraphData(): GraphData {
-  return (cached ??= readSeed());
+  return (cached ??= parseGraphDataCsv(graphDataCsv));
 }

@@ -10,7 +10,7 @@
     "lint:fix": "eslint --fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "sync:data": "node --env-file-if-exists=.env.local scripts/sync-data.mjs",
+    "sync:data": "node --env-file-if-exists=.env.local scripts/sync-data.mjs && node scripts/gen-seed-snapshot.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
