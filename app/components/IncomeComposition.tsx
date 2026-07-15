@@ -12,9 +12,16 @@
  *
  * Uses Recharts' Treemap for the squarified layout; an sr-only summary and the data
  * table carry every figure as text for the keyboard/screen-reader path.
+ *
+ * The tiles get a light motion touch (a staggered spring entrance, largest first,
+ * plus a soft drop-shadow and a small hover lift) so the composition assembles and
+ * reads with depth. The view stays strictly top-down: the elevation is decorative,
+ * never a tilt, so tile area still equals dollars and the encoding stays honest. All
+ * of it is disabled under prefers-reduced-motion.
  */
 
 import { ResponsiveContainer, Tooltip, Treemap } from "recharts";
+import { motion, useReducedMotion } from "motion/react";
 import type { GraphMeta, Household, LineItem } from "@/lib/graph-data";
 import { sumLineItems } from "@/lib/graph-data";
 import { formatCAD } from "@/lib/format";
@@ -97,7 +104,12 @@ function TreemapTooltip({ active, payload }: TooltipProps) {
 
 // ── tile ──
 
-function makeTile(data: TileDatum[], textColor: string, ring: string) {
+function makeTile(
+  data: TileDatum[],
+  textColor: string,
+  ring: string,
+  reduce: boolean,
+) {
   function Tile(props: {
     x?: number | string;
     y?: number | string;
@@ -112,16 +124,34 @@ function makeTile(data: TileDatum[], textColor: string, ring: string) {
     const height = Number(props.height ?? 0);
     // Prefer the index Recharts passes; fall back to matching by (unique) name so
     // the tile still resolves across Recharts versions.
+    const index = typeof props.index === "number" ? props.index : -1;
     const d =
-      (typeof props.index === "number" ? data[props.index] : undefined) ??
+      (index >= 0 ? data[index] : undefined) ??
       data.find((t) => t.name === props.name);
     // Recharts' content type requires a non-null element; empty group for gaps.
     if (!d || width <= 0 || height <= 0) return <g />;
     const roomy = width > 74 && height > 44;
     const tag =
       d.key === "housing" ? "rent only" : d.estimate ? "estimate" : "";
+    // Scale/opacity animate about the tile's own centre (fill-box) so the entrance
+    // and hover lift never shift the tile off its dollar-proportional footprint.
     return (
-      <g>
+      <motion.g
+        initial={reduce ? false : { opacity: 0, scale: 0.96 }}
+        animate={reduce ? false : { opacity: 1, scale: 1 }}
+        whileHover={reduce ? undefined : { scale: 1.015 }}
+        transition={{
+          type: "spring",
+          stiffness: 280,
+          damping: 26,
+          delay: reduce ? 0 : Math.max(0, index) * 0.04,
+        }}
+        style={{
+          transformBox: "fill-box",
+          transformOrigin: "center",
+          filter: "drop-shadow(0 3px 8px rgba(0, 9, 29, 0.18))",
+        }}
+      >
         <rect
           x={x}
           y={y}
@@ -165,7 +195,7 @@ function makeTile(data: TileDatum[], textColor: string, ring: string) {
             {tag}
           </text>
         )}
-      </g>
+      </motion.g>
     );
   }
   return Tile;
@@ -182,6 +212,7 @@ export default function IncomeComposition({
 }: IncomeCompositionProps) {
   const scheme = useColorScheme();
   const c = PALETTE[scheme];
+  const reduce = useReducedMotion() ?? false;
 
   const total = sumLineItems(household.income);
   const ranked: LineItem[] = [...household.income].sort(
@@ -248,7 +279,7 @@ export default function IncomeComposition({
           <Treemap
             data={data}
             dataKey="size"
-            content={makeTile(data, textColor, c.surface)}
+            content={makeTile(data, textColor, c.surface, reduce)}
             isAnimationActive={false}
             aria-label={summary}
           >

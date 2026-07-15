@@ -10,13 +10,13 @@
  * commented out below, for history).
  *
  * Every figure traces to a citation key (the `source` field) and was
- * independently verified on 2026-07-13. Confidence: `estimate: false` = firm
+ * independently verified on 2026-07-15. Confidence: `estimate: false` = firm
  * (official/primary source); `estimate: true` = derived/estimated and MUST render
  * an "estimate" affordance + method (see `note`).
  *
- * CRA figures (CCB / CGEB / NLCB / NL Income Supplement) rest on verbatim
- * search-extraction plus convergent secondary sources because canada.ca 403-blocks
- * automated fetchers; re-check them in a browser before a public release.
+ * CRA figures (CCB / CGEB / NLCB / NL Income Supplement) were confirmed directly
+ * against the canada.ca pages in a real browser (canada.ca 403-blocks automated
+ * fetchers, so re-check them in a browser before each public release).
  */
 
 export type Money = number; // CAD, per month
@@ -287,7 +287,7 @@ export const graphMeta: GraphMeta = {
   federalYear: 2026, // federal benefit year (CCB/CGEB 2026-27)
   foodYear: 2024, // Nutritious Food Basket
   povertyYear: 2024, // Maytree "Welfare in Canada" / MBM
-  lastUpdated: "2026-07-14",
+  lastUpdated: "2026-07-15",
   monthlyFactor: 4.33,
 };
 

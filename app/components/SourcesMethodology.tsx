@@ -21,6 +21,7 @@ import {
   povertyStats,
   type Household,
 } from "@/lib/graph-data";
+import { siteCopy } from "@/lib/site-copy";
 import CitationLink from "@/app/components/CitationLink";
 
 // Small integers read more classic spelled out ("two of the three") than as digits.
@@ -63,7 +64,10 @@ const GROUPS: { heading: string; keys: SourceKey[] }[] = [
       "healthcanada-nfb",
     ],
   },
-  { heading: "Poverty benchmark", keys: ["maytree-nl-2024"] },
+  {
+    heading: "Poverty benchmark",
+    keys: ["maytree-nl-2024", "statcan-deep-poverty"],
+  },
   {
     heading: "Food insecurity in NL",
     keys: ["proof-2024", "proof-fi-working-2026", "foodfirst-fi-2024"],
@@ -88,11 +92,17 @@ const proseStyle: React.CSSProperties = {
 export default function SourcesMethodology({
   households,
   intro,
+  claimNote = siteCopy.claimNote,
   showHeading = true,
 }: {
   households: Household[];
   /** Editable lead paragraph, from `lib/site-copy.ts`. */
   intro: string;
+  /**
+   * The "what this does and doesn't claim" framing, from `lib/site-copy.ts`.
+   * Optional so existing callers/tests need not thread it; defaults to the copy.
+   */
+  claimNote?: string;
   /**
    * Render the section's own "Sources & methodology" title + intro. False when the
    * page already supplies an <h1> for this content (the standalone sources page).
@@ -191,9 +201,9 @@ export default function SourcesMethodology({
               How the Nutritious Food Basket is measured
             </h4>
             <p className="text-ink-muted" style={proseStyle}>
-              The Nutritious Food Basket prices 61 minimally-processed foods for
-              a reference family of four, compiled each autumn by the NL
-              Statistics Agency and published in context by Food First NL. It
+              The Nutritious Food Basket prices about 60 minimally-processed
+              foods for a reference family of four, compiled each autumn by the
+              NL Statistics Agency and published in context by Food First NL. It
               assumes every meal is cooked from scratch at home, so it
               understates real cost, and it excludes special or therapeutic
               diets, food preparation, cooking and transportation, restaurant
@@ -218,6 +228,53 @@ export default function SourcesMethodology({
               Canada: Newfoundland and Labrador ({povertyYear}). {belowClause},
               and {deepClause}.
             </p>
+            <p className="text-ink-muted" style={proseStyle}>
+              That basket already includes a food allowance, so the Nutritious
+              Food Basket shown on the gap page is a separate, independent
+              healthy-eating benchmark, not a second count of the same cost. It
+              prices a fully nutritious diet, so it runs somewhat higher than
+              the MBM&apos;s own food line.
+            </p>
+            <p
+              className="text-ink-muted"
+              style={{ ...proseStyle, fontSize: 13 }}
+            >
+              Deep income poverty, below {deepPct}% of the line, follows
+              Statistics Canada&apos;s official definition. See{" "}
+              <CitationLink sourceKey="statcan-deep-poverty" text="short" />.
+            </p>
+          </div>
+
+          <div className="grid gap-2">
+            <h4 style={h4Style} className="text-ink">
+              What&apos;s counted, and what isn&apos;t
+            </h4>
+            <p className="text-ink-muted" style={proseStyle}>
+              These figures count cash benefits only. In-kind supports
+              (prescription-drug coverage, subsidized or rent-geared-to-income
+              housing, school food programs, and $10-a-day child care) are not
+              added in. They raise a household&apos;s effective resources, but
+              none of them can be spent on the food or rent this gap is about,
+              which is why the cash shortfall still drives the province&apos;s
+              food-insecurity rate.
+            </p>
+          </div>
+
+          <div className="grid gap-2">
+            <h4 style={h4Style} className="text-ink">
+              What the gap does and doesn&apos;t claim
+            </h4>
+            <p className="text-ink-muted" style={proseStyle}>
+              {claimNote}
+            </p>
+            <p
+              className="text-ink-muted"
+              style={{ ...proseStyle, fontSize: 13 }}
+            >
+              See{" "}
+              <CitationLink sourceKey="proof-fi-working-2026" text="short" />{" "}
+              and <CitationLink sourceKey="nlapc-basic-income" text="short" />.
+            </p>
           </div>
 
           <div className="grid gap-2">
@@ -232,9 +289,12 @@ export default function SourcesMethodology({
               the couple poverty line is scaled because Maytree does not model a
               childless couple. The federal CRA figures (Canada Child Benefit,
               the Canada Groceries and Essentials Benefit, formerly the GST/HST
-              credit, and NL programs) rest on secondary sources because
-              canada.ca blocks automated fetchers; re-check them in a browser
-              before a public release.
+              credit, and NL programs) are taken from canada.ca and confirmed
+              directly against those pages. Each household is a standardized
+              model built from the maximum of every rate it qualifies for, the
+              method Maytree uses, rather than one real family&apos;s budget,
+              and the single adult is modelled as employable, the lowest
+              income-support rate.
             </p>
           </div>
         </div>

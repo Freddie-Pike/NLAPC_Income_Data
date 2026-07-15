@@ -11,9 +11,11 @@
  *      transient tooltip can't hold a reachable link);
  *   3. the "Sources & methodology" section lists every `label` as a link.
  *
- * Verified 2026-07-13. Every displayed number must resolve to a key here (honest
- * and defensible). CRA links (cra-*) are 403-blocked to automated fetchers but
- * valid in a browser; re-check the CRA figures in a browser before a public release.
+ * Verified 2026-07-15: every url was opened and read at its exact address, and the
+ * canada.ca links (cra-* and health-canada), which 403-block automated fetchers,
+ * were confirmed in a real browser. Every displayed number must resolve to a key
+ * here (honest and defensible). The canada.ca links stay bot-blocked, so re-check
+ * those figures in a browser before each public release.
  */
 
 export interface Source {
@@ -86,6 +88,14 @@ export const SOURCES = {
       "Welfare income vs. the Market Basket Measure poverty line for NL households.",
     url: "https://maytree.com/changing-systems/data-measuring/welfare-in-canada/newfoundland-and-labrador/",
   },
+  "statcan-deep-poverty": {
+    short: "StatCan, deep income poverty",
+    label:
+      "Statistics Canada, Deep income poverty: Exploring the dimensions of poverty in Canada",
+    description:
+      "Canada's official measure, stated on the page: a household is in deep income poverty when its disposable income falls below 75% of the Market Basket Measure threshold.",
+    url: "https://www150.statcan.gc.ca/n1/pub/75f0002m/75f0002m2025001-eng.htm",
+  },
   "foodfirst-nfb-2024": {
     short: "Food First NL, NFB 2024",
     label: "Food First NL, 2024 Nutritious Food Basket",
@@ -115,7 +125,7 @@ export const SOURCES = {
     short: "PROOF, food insecurity 2024",
     label: "PROOF (U of T), Household food insecurity 2024 (NL 30.1%)",
     description:
-      "PROOF's 2024 household food-insecurity data (NL 30.1%, ~158,000 people).",
+      "PROOF's 2024 household food-insecurity data (NL at 30.1%, among the highest of the provinces).",
     url: "https://proof.utoronto.ca/2025/new-data-on-household-food-insecurity-in-2024/",
   },
   "proof-fi-working-2026": {
@@ -132,7 +142,7 @@ export const SOURCES = {
       "Health Canada, National Nutritious Food Basket (methodology & exclusions)",
     description:
       "The national protocol behind the food basket, its method and exclusions.",
-    url: "https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/nutritious-food-basket.html",
+    url: "https://www.canada.ca/en/health-canada/services/food-nutrition/food-nutrition-surveillance/national-nutritious-food-basket.html",
   },
   "nlapc-basic-income": {
     short: "NLAPC, Basic Income NL",
