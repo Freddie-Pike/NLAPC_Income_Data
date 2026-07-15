@@ -1,26 +1,259 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   NL Eats design tokens, seeded from the NLAPC brand.
+   Authored in OKLCH. Consume by role (text-ink, bg-surface, var(--chart-income)),
+   never raw hex in components. Contrast ratios are computed, not eyeballed;
+   the chart palette passes dataviz validate_palette.js in both modes.
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand + surface (light, default) */
+  --bg: oklch(100% 0 90); /* #FFFFFF brand white */
+  --surface: oklch(97.9% 0.003 264); /* #F7F8FA faint cool-neutral */
+  --ink: oklch(14.3% 0.048 256); /* #00091D, 19.9:1 on white */
+  --ink-muted: oklch(43.7% 0.034 270); /* #4A5165, 7.9:1 on white */
+  --accent: oklch(85% 0.159 87); /* #FAC637 NLAPC golden-yellow */
+  --accent-ink: oklch(
+    14.3% 0.048 256
+  ); /* text on accent, 12.5:1 (never white) */
+  --border: oklch(14.3% 0.048 256 / 0.12); /* ink @ 12% */
+  --ring: oklch(85% 0.159 87); /* focus ring = accent */
+
+  /* Chart roles (separate from brand accent), light */
+  --chart-surface: oklch(100% 0 90); /* #FFFFFF plot plane */
+  --chart-income: oklch(57.5% 0.163 256); /* #2A78D6 blue = money in */
+  --chart-cost: oklch(67.1% 0.175 41); /* #EB6834 orange = expense */
+  --chart-deficit: oklch(
+    57.5% 0.186 25
+  ); /* #D03B3B status-critical (text only) */
+  --chart-poverty: var(--ink-muted); /* MBM reference line (neutral) */
+  --chart-grid: oklch(93% 0.004 264); /* faint hairline gridlines */
+  --chart-axis: var(--ink-muted);
+
+  /* Income stack shades, bottom -> top (darkened dataviz blue ramp so every step
+     clears WCAG 3:1 on the surface). IncomeCostChart owns the shipped hex ramp;
+     these tokens mirror it for the design system. */
+  --chart-income-1: oklch(34% 0.09 258); /* #0D366B */
+  --chart-income-2: oklch(38.5% 0.104 258); /* #104281 */
+  --chart-income-3: oklch(41.5% 0.11 256); /* #184F95 */
+  --chart-income-4: oklch(46% 0.13 256); /* #1C5CAB */
+  --chart-income-5: oklch(51.5% 0.15 256); /* #256ABF */
+  --chart-income-6: oklch(57.5% 0.163 256); /* #2A78D6 */
+  --chart-income-7: oklch(62.2% 0.161 255); /* #3987E5 */
+  /* Cost stack shades, bottom -> top (orange hue, food first) */
+  --chart-cost-1: oklch(67.1% 0.175 41); /* #EB6834 food */
+  --chart-cost-2: oklch(73% 0.14 45);
+  --chart-cost-3: oklch(78% 0.115 50);
+
+  /* Typography */
+  --font-heading: var(
+    --font-lato,
+    var(--font-geist-sans),
+    system-ui,
+    sans-serif
+  );
+  --font-body: var(--font-geist-sans, system-ui, sans-serif);
+  --font-mono: var(--font-geist-mono, ui-monospace, monospace);
+
+  /* Legacy aliases kept so the earlier scaffold keeps rendering */
+  --background: var(--bg);
+  --foreground: var(--ink);
 }
 
+/* Dark theme, deep navy, not pure black; its own validated steps (not an
+   auto-flip). A tiny inline script (app/layout.tsx) resolves light/dark/system to
+   a data-theme value before first paint, and ThemeToggle keeps it in sync, so the
+   CSS tokens and the chart's SVG marks switch from one signal. */
+:root[data-theme="dark"] {
+  --bg: oklch(16.2% 0.033 266); /* #070D1C */
+  --surface: oklch(20.7% 0.038 265); /* #0F1729 */
+  --ink: oklch(95.7% 0.007 261); /* #EEF1F6, 15.8:1 on surface */
+  --ink-muted: oklch(71.5% 0.032 267); /* #9AA3B8, 7.1:1 on surface */
+  --accent: oklch(85% 0.159 87); /* unchanged, 12.2:1 on bg */
+  --accent-ink: oklch(14.3% 0.048 256);
+  --border: oklch(95.7% 0.007 261 / 0.14);
+  --ring: oklch(85% 0.159 87);
+
+  --chart-surface: oklch(20.7% 0.038 265); /* #0F1729 */
+  --chart-income: oklch(62.2% 0.161 255); /* #3987E5 */
+  --chart-cost: oklch(62.2% 0.173 40); /* #D95926 */
+  --chart-deficit: oklch(66.9% 0.159 22); /* #E66767, 5.5:1 on surface */
+  --chart-grid: oklch(30% 0.02 265);
+
+  --chart-income-1: oklch(46% 0.13 256);
+  --chart-income-2: oklch(51.5% 0.15 256);
+  --chart-income-3: oklch(57.5% 0.163 256);
+  --chart-income-4: oklch(62.2% 0.161 255);
+  --chart-income-5: oklch(67% 0.15 255);
+  --chart-income-6: oklch(72% 0.125 254);
+  --chart-income-7: oklch(77% 0.1 253);
+  --chart-cost-1: oklch(62.2% 0.173 40); /* #D95926 */
+  --chart-cost-2: oklch(68% 0.145 44);
+  --chart-cost-3: oklch(73% 0.12 48);
+}
+
+/* Tailwind v4 theme mapping, exposes tokens as utilities (bg-surface, text-ink, …) */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-border: var(--border);
+  --color-chart-income: var(--chart-income);
+  --color-chart-cost: var(--chart-cost);
+  --color-chart-deficit: var(--chart-deficit);
+
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-heading);
+  --font-mono: var(--font-mono);
+
+  /* Legacy aliases (scaffold utilities) */
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* In-page anchor targets clear the sticky nav when scrolled to */
+#instrument,
+#sources {
+  scroll-margin-top: 5rem;
+}
+
+/* Skip-to-content link. Hidden until keyboard focus via opacity (not an offscreen
+   slide), so it can never flash a clipped sliver at the viewport edge. */
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  z-index: 60;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+.skip-link:focus-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Tabular figures for money and aligned numeric columns */
+.tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Disclosure marker (data-table <details>): the ▸ rotates to point down (▾)
+   when the section is open. */
+.disclosure-marker {
+  display: inline-block;
+  transition: transform 150ms ease;
+}
+details[open] .disclosure-marker {
+  transform: rotate(90deg);
+}
+
+/* Citation links (Sources & methodology, data table). Ink text with a hairline
+   underline that warms to the brand accent on hover; focus ring is the global
+   :focus-visible rule above. */
+.source-link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklch, var(--ink-muted) 40%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 150ms ease;
+}
+.source-link:hover {
+  text-decoration-color: var(--accent);
+}
+
+/* Link-preview card (CitationLink). Opacity-only entrance so it never fights the
+   flip transform used when the card opens above its link. */
+.citation-preview {
+  animation: citation-in 140ms ease-out;
+}
+@keyframes citation-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Brand logomark: the source PNG is a single dark navy. It reads as-is on the
+   light plane; on the dark navy plane it would vanish, so lift it to near-white.
+   (brightness(0) normalizes to black preserving alpha, invert flips it to white.) */
+:root[data-theme="dark"] .brand-logo {
+  filter: brightness(0) invert(1);
+}
+
+/* Gate screen entrance: a quiet rise + fade (neutralized by reduced-motion below) */
+.gate-enter {
+  animation: gate-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes gate-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accessible focus ring (brand accent) on every interactive control */
+:where(button, input, select, textarea, a, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* The segmented-control radios are sr-only, so the visible <label> carries focus */
+label:has(> input:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
