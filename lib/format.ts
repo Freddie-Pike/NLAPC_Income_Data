@@ -1,4 +1,4 @@
-/** Shared, pure formatters (kept out of components so Phase-2 Vitest can test them). */
+/** Shared, pure formatters (kept out of components so Vitest can test them). */
 
 const CAD = new Intl.NumberFormat("en-CA", {
   style: "currency",
@@ -6,7 +6,10 @@ const CAD = new Intl.NumberFormat("en-CA", {
   maximumFractionDigits: 0,
 });
 
-/** $1,211, whole-dollar CAD, no cents (monthly figures). */
+/**
+ * Format a monthly figure as whole-dollar CAD, with no cents.
+ * Rounds to the nearest dollar, e.g. `1210.62` renders as `"$1,211"`.
+ */
 export function formatCAD(amount: number): string {
   return CAD.format(Math.round(amount));
 }

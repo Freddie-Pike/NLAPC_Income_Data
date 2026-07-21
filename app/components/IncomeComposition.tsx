@@ -54,9 +54,9 @@ interface TooltipProps {
 
 function TreemapTooltip({ active, payload }: TooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
-  const d = payload[0]?.payload;
-  if (!d || typeof d.size !== "number") return null;
-  const src = getSource(d.source);
+  const tile = payload[0]?.payload;
+  if (!tile || typeof tile.size !== "number") return null;
+  const source = getSource(tile.source);
   return (
     <div
       role="tooltip"
@@ -73,8 +73,8 @@ function TreemapTooltip({ active, payload }: TooltipProps) {
       }}
     >
       <div style={{ fontWeight: 700, marginBottom: 2 }}>
-        {d.name}
-        {d.estimate && (
+        {tile.name}
+        {tile.estimate && (
           <span
             style={{
               marginLeft: 6,
@@ -91,11 +91,11 @@ function TreemapTooltip({ active, payload }: TooltipProps) {
         )}
       </div>
       <div className="tabular" style={{ fontWeight: 600 }}>
-        {formatCAD(d.size)} · {d.share}% of income
+        {formatCAD(tile.size)} · {tile.share}% of income
       </div>
-      {src && (
+      {source && (
         <div style={{ fontSize: 11, color: "var(--ink-muted)", marginTop: 3 }}>
-          Source: {src.short}
+          Source: {source.short}
         </div>
       )}
     </div>
@@ -125,14 +125,14 @@ function makeTile(
     // Prefer the index Recharts passes; fall back to matching by (unique) name so
     // the tile still resolves across Recharts versions.
     const index = typeof props.index === "number" ? props.index : -1;
-    const d =
+    const tile =
       (index >= 0 ? data[index] : undefined) ??
-      data.find((t) => t.name === props.name);
+      data.find((candidate) => candidate.name === props.name);
     // Recharts' content type requires a non-null element; empty group for gaps.
-    if (!d || width <= 0 || height <= 0) return <g />;
+    if (!tile || width <= 0 || height <= 0) return <g />;
     const roomy = width > 74 && height > 44;
     const tag =
-      d.key === "housing" ? "rent only" : d.estimate ? "estimate" : "";
+      tile.key === "housing" ? "rent only" : tile.estimate ? "estimate" : "";
     // Scale/opacity animate about the tile's own centre (fill-box) so the entrance
     // and hover lift never shift the tile off its dollar-proportional footprint.
     return (
@@ -158,7 +158,7 @@ function makeTile(
           width={width}
           height={height}
           rx={4}
-          fill={d.fill}
+          fill={tile.fill}
           stroke={ring}
           strokeWidth={2}
         />
@@ -170,7 +170,7 @@ function makeTile(
             fontSize={13}
             fontWeight={600}
           >
-            {d.name.length > 22 ? `${d.name.slice(0, 21)}…` : d.name}
+            {tile.name.length > 22 ? `${tile.name.slice(0, 21)}…` : tile.name}
           </text>
         )}
         {roomy && (
@@ -181,7 +181,7 @@ function makeTile(
             fontSize={15}
             fontWeight={800}
           >
-            {formatCAD(d.size)}
+            {formatCAD(tile.size)}
           </text>
         )}
         {roomy && tag && (

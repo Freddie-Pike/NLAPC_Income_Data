@@ -4,7 +4,7 @@
    NL Eats design tokens, seeded from the NLAPC brand.
    Authored in OKLCH. Consume by role (text-ink, bg-surface, var(--chart-income)),
    never raw hex in components. Contrast ratios are computed, not eyeballed;
-   the chart palette passes dataviz validate_palette.js in both modes.
+   the chart palette is validated colourblind-safe in both modes.
    ========================================================================== */
 
 :root {
@@ -31,7 +31,7 @@
   --chart-grid: oklch(93% 0.004 264); /* faint hairline gridlines */
   --chart-axis: var(--ink-muted);
 
-  /* Income stack shades, bottom -> top (darkened dataviz blue ramp so every step
+  /* Income stack shades, bottom -> top (darkened blue ramp so every step
      clears WCAG 3:1 on the surface). IncomeCostChart owns the shipped hex ramp;
      these tokens mirror it for the design system. */
   --chart-income-1: oklch(34% 0.09 258); /* #0D366B */

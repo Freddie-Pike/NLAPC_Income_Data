@@ -91,13 +91,10 @@ function toLineItem(row: RawRow, where: string): LineItem {
   return item;
 }
 
-/** Order cost segments so the food row is `costs[0]` (the shape's contract). */
-function foodFirst(costs: LineItem[]): LineItem[] {
-  return [...costs].sort((a, b) => {
-    if (a.key === "food") return -1;
-    if (b.key === "food") return 1;
-    return 0;
-  });
+function moveKeyToFront(items: LineItem[], key: string): LineItem[] {
+  const index = items.findIndex((item) => item.key === key);
+  if (index <= 0) return [...items];
+  return [items[index], ...items.slice(0, index), ...items.slice(index + 1)];
 }
 
 /**
@@ -161,7 +158,7 @@ export function parseGraphDataCsv(
     (id) => income[id] || costs[id] || poverty[id],
   ).map((id) => {
     const inc = income[id] ?? [];
-    const cst = foodFirst(costs[id] ?? []);
+    const cst = moveKeyToFront(costs[id] ?? [], "food");
     const pov = poverty[id];
     if (inc.length === 0)
       throw new Error(`No income rows for household "${id}"`);

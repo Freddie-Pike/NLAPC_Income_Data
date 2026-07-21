@@ -5,9 +5,9 @@
  *
  * Two stacked bars on ONE shared $/month axis (never a dual axis): total income
  * vs. total essential costs, with a dashed Market Basket Measure poverty line.
- * Built to the `dataviz` method: form chosen by the data's job (magnitude
- * comparison), colour assigned by role (income=blue, cost=orange, validated
- * colourblind-safe), baseline pinned at 0, 2px surface gaps between stacked
+ * Built to data-visualization first principles: form chosen by the data's job
+ * (magnitude comparison), colour assigned by role (income=blue, cost=orange,
+ * validated colourblind-safe), baseline pinned at 0, 2px gaps between stacked
  * segments, selective direct labels (bar totals only), a two-series legend, a
  * source/estimate tooltip, and a synchronized data-table twin.
  *
@@ -82,11 +82,13 @@ function ChartTooltip({ active, label, payload }: TooltipProps) {
       color: p.color ?? p.fill,
     }))
     .filter(
-      (r): r is { item: LineItem; value: number; color: string | undefined } =>
-        Boolean(r.item),
+      (
+        row,
+      ): row is { item: LineItem; value: number; color: string | undefined } =>
+        Boolean(row.item),
     );
   if (rows.length === 0) return null;
-  const total = rows.reduce((sum, r) => sum + r.value, 0);
+  const total = rows.reduce((sum, row) => sum + row.value, 0);
   return (
     <div
       role="tooltip"
@@ -112,9 +114,9 @@ function ChartTooltip({ active, label, payload }: TooltipProps) {
           gap: 4,
         }}
       >
-        {rows.map((r) => (
+        {rows.map((row) => (
           <li
-            key={r.item.key}
+            key={row.item.key}
             style={{ display: "flex", alignItems: "baseline", gap: 8 }}
           >
             <span
@@ -123,14 +125,14 @@ function ChartTooltip({ active, label, payload }: TooltipProps) {
                 width: 9,
                 height: 9,
                 borderRadius: 2,
-                background: r.color ?? "var(--ink-muted)",
+                background: row.color ?? "var(--ink-muted)",
                 flex: "0 0 auto",
                 transform: "translateY(1px)",
               }}
             />
             <span style={{ flex: 1 }}>
-              {r.item.label}
-              {r.item.estimate && (
+              {row.item.label}
+              {row.item.estimate && (
                 <span
                   style={{
                     marginLeft: 6,
@@ -144,7 +146,7 @@ function ChartTooltip({ active, label, payload }: TooltipProps) {
                   estimate
                 </span>
               )}
-              {r.item.source && (
+              {row.item.source && (
                 <span
                   style={{
                     display: "block",
@@ -152,25 +154,26 @@ function ChartTooltip({ active, label, payload }: TooltipProps) {
                     color: "var(--ink-muted)",
                   }}
                 >
-                  Source: {getSource(r.item.source)?.short ?? r.item.source}
+                  Source: {getSource(row.item.source)?.short ?? row.item.source}
                 </span>
               )}
-              {(r.item.estimate || r.item.key === "food") && r.item.note && (
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: 11,
-                    color: "var(--ink-muted)",
-                    marginTop: 3,
-                    fontStyle: "italic",
-                  }}
-                >
-                  {r.item.note}
-                </span>
-              )}
+              {(row.item.estimate || row.item.key === "food") &&
+                row.item.note && (
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: 11,
+                      color: "var(--ink-muted)",
+                      marginTop: 3,
+                      fontStyle: "italic",
+                    }}
+                  >
+                    {row.item.note}
+                  </span>
+                )}
             </span>
             <span className="tabular" style={{ fontWeight: 600 }}>
-              {formatCAD(r.value)}
+              {formatCAD(row.value)}
             </span>
           </li>
         ))}
@@ -419,25 +422,53 @@ export default function IncomeCostChart({
 
       <figcaption
         style={{
-          fontSize: 12.5,
-          color: "var(--ink-muted)",
-          padding: "10px 8px 0",
-          lineHeight: 1.5,
+          display: "grid",
+          gap: 7,
+          fontSize: 13,
+          padding: "12px 8px 0",
+          lineHeight: 1.55,
         }}
       >
-        Monthly CAD. Income: NL Income Support ({meta.incomeYear}) and federal
-        benefits ({meta.federalYear}) · food: {meta.foodYear} Nutritious Food
-        Basket (weekly × {meta.monthlyFactor}) · poverty line:{" "}
-        {meta.povertyYear} Market Basket Measure ÷ 12. Bar baseline at 0, one
-        axis. The poverty line already includes a food allowance; the food bar
-        is a separate, independent healthy-eating benchmark, not added onto the
-        line. Food First NL&apos;s own published monthly food figure uses × 4
-        rather than × {meta.monthlyFactor}, so this figure sits a little higher.
-        Estimate-tagged figures are derived, see the tooltip and the data table
-        for the method.
+        <p className="text-ink-muted" style={{ margin: 0 }}>
+          <CaptionLabel>Where these numbers come from.</CaptionLabel> Every
+          figure is monthly, in Canadian dollars. Income adds NL Income Support
+          (at {meta.incomeYear} rates) to federal benefits (for{" "}
+          {meta.federalYear}). Food is the {meta.foodYear} Nutritious Food
+          Basket. The poverty line is the {meta.povertyYear} Market Basket
+          Measure, divided by 12.
+        </p>
+        <p className="text-ink-muted" style={{ margin: 0 }}>
+          <CaptionLabel>How to compare them.</CaptionLabel> Both bars are drawn
+          on the same scale and both start at zero, so their heights can be
+          compared directly. The poverty line already has a grocery budget built
+          into it. The food bar is not part of that line, and it is not added on
+          top of it: it is a separate answer to a different question, which is
+          what eating healthily actually costs.
+        </p>
+        {meta.monthlyFactor !== 4 && (
+          <p className="text-ink-muted" style={{ margin: 0 }}>
+            <CaptionLabel>Why the food figure looks high.</CaptionLabel> Food
+            First NL publishes the basket as a weekly grocery cost, and turns it
+            into a monthly one by multiplying by 4. This chart multiplies by{" "}
+            {meta.monthlyFactor} instead, the average number of weeks in a
+            calendar month, so the food bar sits a little higher than their
+            published figure.
+          </p>
+        )}
+        <p className="text-ink-muted" style={{ margin: 0 }}>
+          <CaptionLabel>Estimates.</CaptionLabel> Anything labelled
+          &ldquo;estimate&rdquo; was worked out from other figures rather than
+          taken straight from a source. Hover a bar, or read the table below, to
+          see exactly how.
+        </p>
       </figcaption>
     </figure>
   );
+}
+
+/** Bold lead-in that anchors a figcaption line, in full-contrast ink. */
+function CaptionLabel({ children }: { children: React.ReactNode }) {
+  return <strong className="font-semibold text-ink">{children}</strong>;
 }
 
 function LegendKey({ color, label }: { color: string; label: string }) {

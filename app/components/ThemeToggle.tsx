@@ -54,9 +54,9 @@ export default function ThemeToggle() {
       document.documentElement.setAttribute("data-theme", resolve(mode));
     apply();
     if (mode !== "system") return;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    mediaQuery.addEventListener("change", apply);
+    return () => mediaQuery.removeEventListener("change", apply);
   }, [mode]);
 
   const cycle = () => {
@@ -64,7 +64,8 @@ export default function ThemeToggle() {
     try {
       localStorage.setItem(KEY, next);
     } catch {
-      /* private mode, ignore */
+      // Safari Private Browsing throws on localStorage writes. Ignore it: the
+      // theme still applies now, it just won't survive a reload.
     }
     window.dispatchEvent(new Event(EVT));
   };

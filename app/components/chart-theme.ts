@@ -6,8 +6,8 @@
  * The scheme-aware hex ramps live here (not in globals.css) because CSS `var()`
  * does not resolve in SVG presentation attributes; the surrounding HTML chrome
  * still uses the CSS design tokens and themes automatically. These hexes mirror
- * the `--chart-*` tokens in globals.css and pass the dataviz validator in both
- * modes (income-vs-cost bases clear the CVD floor; the 7-step income ramp is a
+ * the `--chart-*` tokens in globals.css and are validated in both modes
+ * (income-vs-cost bases clear the CVD floor; the 7-step income ramp is a
  * SEQUENTIAL ramp, told apart by 2px surface gaps + direct labels, never by hue).
  *
  * `useColorScheme` follows the resolved theme (`data-theme`, set by ThemeToggle
